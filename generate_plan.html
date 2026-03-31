@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Generate Plan - NutriAI{% endblock %}
+{% block page_title %}AI Diet Plan Generator{% endblock %}
+
+{% block extra_css %}
+.plan-hero {
+    background: linear-gradient(135deg, #1b4332, #2d6a4f);
+    border-radius: var(--radius);
+    padding: 40px;
+    color: #fff;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.plan-hero::before {
+    content: '🥗';
+    position: absolute;
+    font-size: 8rem;
+    right: -20px;
+    top: -20px;
+    opacity: 0.15;
+}
+.profile-summary {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.profile-item { text-align: center; }
+.profile-item .val { font-size: 1.1rem; font-weight: 700; }
+.profile-item .lbl { font-size: 0.72rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.5px; }
+.api-warning {
+    background: #fff8e1;
+    border: 1px solid #ffe082;
+    border-radius: 12px;
+    padding: 16px 20px;
+}
+.generating-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(27,67,50,0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #fff;
+    text-align: center;
+}
+.spinner-ring {
+    width: 64px; height: 64px;
+    border: 4px solid rgba(255,255,255,0.2);
+    border-top-color: #f9c784;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+{% endblock %}
+
+{% block content %}
+<!-- Generating Overlay -->
+<div class="generating-overlay" id="genOverlay">
+    <div class="spinner-ring"></div>
+    <h3 style="font-family:'Playfair Display',serif;">Generating Your Plan...</h3>
+    <p style="color:rgba(255,255,255,0.7);max-width:300px;">Our AI is crafting a personalized 7-day diet plan just for you. This may take 15-30 seconds.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7 fade-in">
+        <!-- Hero -->
+        <div class="plan-hero mb-4">
+            <div style="font-size:1rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:8px;">Smart Algorithm</div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:8px;">Your Personalized Diet Plan</h2>
+            <p style="color:rgba(255,255,255,0.75);max-width:420px;margin:0 auto;">
+                Based on your profile, our system uses the Harris-Benedict formula and nutrition science to create a complete 7-day meal plan tailored to your goals and preferences.
+            </p>
+
+            {% if profile.age %}
+            <div class="profile-summary">
+                <div class="profile-item">
+                    <div class="val">{{ profile.age }}y</div>
+                    <div class="lbl">Age</div>
+                </div>
+                <div class="profile-item">
+                    <div class="val">{{ profile.weight_kg }}kg</div>
+                    <div class="lbl">Weight</div>
+                </div>
+                <div class="profile-item">
+                    <div class="val">{{ profile.bmi }}</div>
+                    <div class="lbl">BMI</div>
+                </div>
+                <div class="profile-item">
+                    <div class="val">{{ profile.get_goal_display|truncatechars:12 }}</div>
+                    <div class="lbl">Goal</div>
+                </div>
+                <div class="profile-item">
+                    <div class="val">{{ profile.get_diet_type_display|truncatechars:12 }}</div>
+                    <div class="lbl">Diet</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if not profile.age or not profile.weight_kg %}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Please <a href="{% url 'setup_profile' %}" class="fw-600">complete your profile</a> before generating a plan.
+        </div>
+        {% else %}
+        <form method="post" onsubmit="showGenerating()">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-accent btn-lg w-100 py-3" style="font-size:1.05rem;">
+                <i class="bi bi-stars me-2"></i> Generate My Diet Plan
+            </button>
+            <p class="text-center text-muted small mt-2">Instantly generated — no wait time</p>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-5 fade-in fade-in-2">
+        <!-- What You'll Get -->
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-stars me-2" style="color:#f4a261;"></i>What You'll Get</div>
+            <div class="card-body p-4">
+                {% for item in "123456"|make_list %}
+                <div class="d-flex align-items-start gap-3 {% if not forloop.last %}mb-3{% endif %}">
+                    <div style="width:32px;height:32px;background:#f0faf4;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.85rem;">
+                        {% if forloop.counter == 1 %}🎯{% elif forloop.counter == 2 %}📅{% elif forloop.counter == 3 %}💊{% elif forloop.counter == 4 %}🥗{% elif forloop.counter == 5 %}💧{% else %}📊{% endif %}
+                    </div>
+                    <div>
+                        <div style="font-weight:600;font-size:0.88rem;">
+                            {% if forloop.counter == 1 %}Calorie & Macro Targets
+                            {% elif forloop.counter == 2 %}Complete 7-Day Meal Plan
+                            {% elif forloop.counter == 3 %}Supplement Suggestions
+                            {% elif forloop.counter == 4 %}Foods to Eat & Avoid
+                            {% elif forloop.counter == 5 %}Hydration Guidelines
+                            {% else %}Personalized Nutrition Tips{% endif %}
+                        </div>
+                        <div style="font-size:0.78rem;color:var(--text-muted);">
+                            {% if forloop.counter == 1 %}Tailored to your weight & activity
+                            {% elif forloop.counter == 2 %}Breakfast, lunch, dinner & snacks
+                            {% elif forloop.counter == 3 %}Based on your health conditions
+                            {% elif forloop.counter == 4 %}Specific to your diet type
+                            {% elif forloop.counter == 5 %}Daily water intake recommendations
+                            {% else %}Science-backed advice for your goal{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Past Plans -->
+        {% if plans %}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Previous Plans</span>
+                <a href="{% url 'my_plans' %}" class="small text-muted">View all</a>
+            </div>
+            <div class="card-body p-0">
+                {% for plan in plans|slice:":3" %}
+                <a href="{% url 'view_plan' plan.id %}" class="d-flex justify-content-between align-items-center px-4 py-3 border-bottom text-decoration-none" style="color:inherit;">
+                    <div>
+                        <div style="font-size:0.88rem;font-weight:500;">{{ plan.title|truncatechars:35 }}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">{{ plan.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    {% if plan.is_active %}<span class="badge" style="background:#f0faf4;color:#2d6a4f;">Active</span>{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showGenerating() {
+    document.getElementById('genOverlay').style.display = 'flex';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Log Meal - NutriAI{% endblock %}
+{% block page_title %}Log a Meal{% endblock %}
+
+{% block extra_css %}
+.macro-hint { background: var(--bg); border-radius: 10px; padding: 12px 16px; font-size: 0.82rem; color: var(--text-muted); }
+.meal-type-btn { cursor: pointer; border: 2px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; transition: all .2s; }
+.meal-type-btn:hover, .meal-type-btn.active { border-color: var(--primary); background: #f0faf4; }
+.meal-type-btn .icon { font-size: 1.5rem; }
+.meal-type-btn .label { font-size: 0.8rem; font-weight: 600; margin-top: 4px; color: var(--text); }
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center g-4">
+    <div class="col-lg-8 fade-in">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-plus-circle me-2" style="color:#2d6a4f;"></i>Add Food Entry
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Meal Type Quick Select -->
+                    <div class="mb-4">
+                        <label class="form-label">Meal Type</label>
+                        <div class="row g-2">
+                            {% for val, label in form.meal_type.field.choices %}
+                            {% if val %}
+                            <div class="col-3">
+                                <div class="meal-type-btn" onclick="selectMealType('{{ val }}', this)">
+                                    <div class="icon">
+                                        {% if val == 'breakfast' %}🌅
+                                        {% elif val == 'lunch' %}☀️
+                                        {% elif val == 'dinner' %}🌙
+                                        {% else %}🍎{% endif %}
+                                    </div>
+                                    <div class="label">{{ label }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div style="display:none;">{{ form.meal_type }}</div>
+                        {% if form.meal_type.errors %}<div class="text-danger small mt-1">{{ form.meal_type.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Food Name <span class="text-danger">*</span></label>
+                            {{ form.food_name }}
+                            {% if form.food_name.errors %}<div class="text-danger small mt-1">{{ form.food_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Quantity</label>
+                            {{ form.quantity }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Date <span class="text-danger">*</span></label>
+                            {{ form.date }}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="fw-600 mb-3">Nutritional Info <small class="text-muted fw-400">(optional but recommended)</small></h6>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">🔥 Calories</label>
+                            {{ form.calories }}
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">💪 Protein (g)</label>
+                            {{ form.protein }}
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">⚡ Carbs (g)</label>
+                            {{ form.carbs }}
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label">🥑 Fat (g)</label>
+                            {{ form.fat }}
+                        </div>
+                    </div>
+
+                    <div class="macro-hint mb-4">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Tip: Check food labels or use apps like MyFitnessPal for nutritional values. Common items:
+                        <strong>1 cup rice ≈ 200 kcal</strong> | <strong>1 egg ≈ 70 kcal</strong> | <strong>100g chicken ≈ 165 kcal</strong>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Notes (optional)</label>
+                        {{ form.notes }}
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check2 me-2"></i>Log Meal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 fade-in fade-in-1">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightbulb me-2" style="color:#f4a261;"></i>Common Indian Foods</div>
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Dal Tadka (1 bowl)</span><span class="text-muted">160 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Roti (1 piece)</span><span class="text-muted">80 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Rice (1 cup cooked)</span><span class="text-muted">200 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Paneer (100g)</span><span class="text-muted">265 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Curd (1 cup)</span><span class="text-muted">100 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Idli (2 pieces)</span><span class="text-muted">80 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Dosa (1 medium)</span><span class="text-muted">120 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Poha (1 cup)</span><span class="text-muted">180 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 border-bottom small"><span>Sprouts (1 cup)</span><span class="text-muted">100 kcal</span></div>
+                <div class="d-flex justify-content-between py-2 small"><span>Banana (1 medium)</span><span class="text-muted">90 kcal</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectMealType(val, el) {
+    document.getElementById('id_meal_type').value = val;
+    document.querySelectorAll('.meal-type-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+// Auto-select based on time
+const h = new Date().getHours();
+const auto = h < 11 ? 'breakfast' : h < 15 ? 'lunch' : h < 18 ? 'snack' : 'dinner';
+document.querySelectorAll('.meal-type-btn').forEach(btn => {
+    const label = btn.querySelector('.label').textContent.toLowerCase();
+    if (label === auto) { btn.classList.add('active'); document.getElementById('id_meal_type').value = auto; }
+});
+</script>
+{% endblock %}

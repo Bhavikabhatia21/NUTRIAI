@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Log Weight - NutriAI{% endblock %}
+{% block page_title %}Log Weight{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 fade-in">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-bar-chart-line me-2" style="color:#2d6a4f;"></i>Add Weight Entry</div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Weight (kg) <span class="text-danger">*</span></label>
+                        {{ form.weight_kg }}
+                        {% if form.weight_kg.errors %}<div class="text-danger small mt-1">{{ form.weight_kg.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date <span class="text-danger">*</span></label>
+                        {{ form.date }}
+                        {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Notes (optional)</label>
+                        {{ form.notes }}
+                    </div>
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check2 me-2"></i>Save Weight
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);color:#fff;border:none;">
+            <div class="card-body p-4 text-center">
+                <div style="font-size:2rem;">💡</div>
+                <h5 style="font-family:'Playfair Display',serif;margin-top:10px;">Best Time to Weigh</h5>
+                <p style="color:rgba(255,255,255,0.75);font-size:0.88rem;margin-bottom:0;">
+                    Weigh yourself in the morning, after using the bathroom, before eating or drinking — for the most consistent results.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Meal History - NutriAI{% endblock %}
+{% block page_title %}Meal History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in flex-wrap gap-2">
+    <form method="get" class="d-flex gap-2">
+        <input type="date" name="date" value="{{ filter_date }}" class="form-control" style="max-width:180px;">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+        {% if filter_date %}<a href="{% url 'meal_history' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+    </form>
+    <a href="{% url 'log_meal' %}" class="btn btn-primary">
+        <i class="bi bi-plus me-1"></i>Log Meal
+    </a>
+</div>
+
+{% if meal_data %}
+    {% for date_str, data in meal_data.items %}
+    <div class="card mb-4 fade-in">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span style="font-weight:600;">📅 {{ date_str }}</span>
+            <div class="d-flex gap-3 small text-muted">
+                <span>🔥 {{ data.total_cal|floatformat:0 }} kcal</span>
+                <span>💪 {{ data.total_protein|floatformat:1 }}g</span>
+                <span>⚡ {{ data.total_carbs|floatformat:1 }}g</span>
+                <span>🥑 {{ data.total_fat|floatformat:1 }}g</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background:var(--bg);">
+                        <tr>
+                            <th class="px-4 py-3">Type</th>
+                            <th>Food</th>
+                            <th>Quantity</th>
+                            <th>Calories</th>
+                            <th>Protein</th>
+                            <th>Carbs</th>
+                            <th>Fat</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meal in data.meals %}
+                        <tr>
+                            <td class="px-4">
+                                <span class="badge" style="background:
+                                    {% if meal.meal_type == 'breakfast' %}#fff8e1;color:#f9a825;
+                                    {% elif meal.meal_type == 'lunch' %}#e8f5e9;color:#2e7d32;
+                                    {% elif meal.meal_type == 'dinner' %}#e3f2fd;color:#1565c0;
+                                    {% else %}#fce4ec;color:#c62828;{% endif %}
+                                    font-size:0.72rem;padding:4px 10px;">{{ meal.get_meal_type_display }}</span>
+                            </td>
+                            <td style="font-weight:500;">{{ meal.food_name }}</td>
+                            <td class="text-muted">{{ meal.quantity }}</td>
+                            <td>{{ meal.calories|floatformat:0 }}</td>
+                            <td class="text-muted">{{ meal.protein|floatformat:1 }}g</td>
+                            <td class="text-muted">{{ meal.carbs|floatformat:1 }}g</td>
+                            <td class="text-muted">{{ meal.fat|floatformat:1 }}g</td>
+                            <td>
+                                <form method="post" action="{% url 'delete_meal' meal.id %}" onsubmit="return confirm('Delete?')" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm text-danger p-0 px-2">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card text-center fade-in">
+    <div class="card-body py-5">
+        <div style="font-size:4rem;">🍽️</div>
+        <h3 style="font-family:'Playfair Display',serif;margin-top:16px;">No Meals Logged</h3>
+        <p class="text-muted mb-4">Start tracking your meals to monitor your nutrition.</p>
+        <a href="{% url 'log_meal' %}" class="btn btn-primary">
+            <i class="bi bi-plus me-1"></i>Log Your First Meal
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

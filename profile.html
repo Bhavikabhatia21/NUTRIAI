@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - NutriAI{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- User Card -->
+    <div class="col-md-4 fade-in">
+        <div class="card text-center">
+            <div class="card-body p-4">
+                <div style="width:80px;height:80px;background:linear-gradient(135deg,#2d6a4f,#40916c);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;font-family:'Playfair Display',serif;margin:0 auto 16px;">
+                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                </div>
+                <h3 style="font-family:'Playfair Display',serif;">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-muted mb-3">{{ user.email }}</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <div class="text-center">
+                        <div style="font-weight:700;color:#2d6a4f;">{{ user.diet_plans.count }}</div>
+                        <div class="small text-muted">Plans</div>
+                    </div>
+                    <div class="text-center">
+                        <div style="font-weight:700;color:#f4a261;">{{ user.meal_logs.count }}</div>
+                        <div class="small text-muted">Meals</div>
+                    </div>
+                    <div class="text-center">
+                        <div style="font-weight:700;color:#4361ee;">{{ user.weight_logs.count }}</div>
+                        <div class="small text-muted">Check-ins</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if profile.bmi %}
+        <div class="card mt-4 text-center">
+            <div class="card-body p-4">
+                <div class="small text-muted mb-2 text-uppercase fw-600" style="letter-spacing:1px;">BMI</div>
+                <div style="font-size:3rem;font-family:'Playfair Display',serif;font-weight:700;color:
+                    {% if profile.bmi_category == 'Normal' %}#2d6a4f
+                    {% elif profile.bmi_category == 'Underweight' %}#f4a261
+                    {% else %}#e63946{% endif %};">{{ profile.bmi }}</div>
+                <span class="badge" style="background:#f0faf4;color:#2d6a4f;padding:6px 14px;font-size:0.82rem;">{{ profile.bmi_category }}</span>
+                <div class="mt-3 row text-center g-0">
+                    <div class="col-6 border-end">
+                        <div style="font-weight:600;">{{ profile.height_cm }} cm</div>
+                        <div class="small text-muted">Height</div>
+                    </div>
+                    <div class="col-6">
+                        <div style="font-weight:600;">{{ profile.weight_kg }} kg</div>
+                        <div class="small text-muted">Weight</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Profile Form -->
+    <div class="col-md-8 fade-in fade-in-1">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-pencil me-2" style="color:#2d6a4f;"></i>Edit Profile</span>
+                <span class="badge" style="background:#f0faf4;color:#2d6a4f;">Member since {{ user.date_joined|date:"M Y" }}</span>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Age</label>
+                            {{ form.age }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Gender</label>
+                            {{ form.gender }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Height (cm)</label>
+                            {{ form.height_cm }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Weight (kg)</label>
+                            {{ form.weight_kg }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Activity Level</label>
+                            {{ form.activity_level }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Primary Goal</label>
+                            {{ form.goal }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Diet Type</label>
+                            {{ form.diet_type }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Allergies</label>
+                            {{ form.allergies }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Health Conditions</label>
+                            {{ form.health_conditions }}
+                        </div>
+                        <div class="col-12 mt-2">
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="bi bi-check2 me-2"></i>Update Profile
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

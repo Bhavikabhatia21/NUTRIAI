@@ -1,0 +1,629 @@
+{% extends 'base.html' %}
+{% block title %}Workout Plan - NutriAI{% endblock %}
+{% block page_title %}Workout Plan{% endblock %}
+
+{% block extra_css %}
+.workout-hero {
+    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 60%, #40916c 100%);
+    border-radius: var(--radius);
+    padding: 32px 40px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.workout-hero::after {
+    content: '🏋️';
+    position: absolute;
+    right: 24px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 5rem;
+    opacity: 0.18;
+}
+.day-tab {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all .2s;
+    text-align: center;
+    min-width: 80px;
+}
+.day-tab:hover { border-color: var(--primary-light); background: #f0faf4; }
+.day-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.day-tab.rest-day { opacity: 0.7; }
+.day-panel { display: none; }
+.day-panel.active { display: block; }
+.exercise-row {
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: box-shadow .2s, transform .2s;
+}
+.exercise-row:hover { box-shadow: var(--shadow-hover); transform: translateX(3px); }
+.ex-name { font-weight: 600; font-size: 0.92rem; color: var(--text); }
+.ex-tip { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
+.ex-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.intensity-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.intensity-Low { background: #e8f5e9; color: #2e7d32; }
+.intensity-Moderate { background: #fff8e1; color: #f57f17; }
+.intensity-High { background: #fce4ec; color: #c62828; }
+.intensity-Rest { background: #e3f2fd; color: #1565c0; }
+.intensity-Low-Moderate { background: #f1f8e9; color: #558b2f; }
+.intensity-Moderate-High { background: #fff3e0; color: #e65100; }
+.stat-mini {
+    text-align: center;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 14px 10px;
+}
+.stat-mini .val { font-size: 1.3rem; font-weight: 700; font-family: 'Playfair Display', serif; }
+.stat-mini .lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.tip-item {
+    background: #f0faf4;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--primary);
+}
+.progress-ring { position: relative; display: inline-block; }
+.week-progress {
+    height: 6px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+.week-progress-bar {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    transition: width .6s ease;
+}
+
+/* ── Checklist ── */
+.exercise-row {
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    transition: all .25s;
+    cursor: pointer;
+    user-select: none;
+}
+.exercise-row:hover { box-shadow: var(--shadow-hover); transform: translateX(3px); }
+.exercise-row.done {
+    background: #f0faf4;
+    border-color: #52b788;
+    opacity: 0.75;
+    transform: none;
+}
+.exercise-row.done .ex-name { text-decoration: line-through; color: var(--text-muted); }
+.exercise-row.done .ex-tip { opacity: 0.5; }
+
+.check-circle {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    transition: all .2s;
+    background: #fff;
+    margin-top: 2px;
+}
+.exercise-row.done .check-circle {
+    background: #52b788;
+    border-color: #52b788;
+    color: #fff;
+}
+
+.day-progress-bar-wrap {
+    background: var(--border);
+    border-radius: 100px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.day-progress-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #52b788, #2d6a4f);
+    transition: width .4s ease;
+}
+.day-complete-badge {
+    display: none;
+    background: #f0faf4;
+    border: 1.5px solid #52b788;
+    color: #2d6a4f;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    animation: popIn .3s ease;
+}
+@keyframes popIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+.reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+}
+.reset-btn:hover { border-color: var(--primary); color: var(--primary); }
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="workout-hero fade-in">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-3">
+        <div>
+            <div style="font-size:0.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:6px;">
+                Personalized for Your Goal
+            </div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:6px;">
+                {{ workout_plan.icon }} {{ workout_plan.label }} Program
+            </h2>
+            <p style="color:rgba(255,255,255,0.75);margin:0;font-size:0.88rem;">
+                7-day workout plan tailored for: <strong style="color:#f9c784;">{{ profile.get_goal_display }}</strong>
+                {% if profile.bmi %} &bull; BMI {{ profile.bmi }} ({{ profile.bmi_category }}){% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-3 flex-wrap">
+            <div class="stat-mini" style="background:rgba(255,255,255,0.12);color:#fff;min-width:80px;">
+                <div class="val">{{ total_weekly_cal }}</div>
+                <div class="lbl" style="color:rgba(255,255,255,0.65);">Cal/Week</div>
+            </div>
+            <div class="stat-mini" style="background:rgba(255,255,255,0.12);color:#fff;min-width:80px;">
+                <div class="val">7</div>
+                <div class="lbl" style="color:rgba(255,255,255,0.65);">Days</div>
+            </div>
+            <div class="stat-mini" style="background:rgba(255,255,255,0.12);color:#fff;min-width:80px;">
+                <div class="val">5</div>
+                <div class="lbl" style="color:rgba(255,255,255,0.65);">Active Days</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Workout Area -->
+    <div class="col-lg-8 fade-in">
+
+        <!-- Day Tabs -->
+        <div class="d-flex gap-2 flex-wrap mb-4" id="dayTabs">
+            {% for day in workout_plan.weekly_plan %}
+            <div class="day-tab {% if day.intensity == 'Rest' %}rest-day{% endif %} {% if forloop.first %}active{% endif %}"
+                 onclick="switchDay({{ forloop.counter0 }}, this)">
+                <div style="font-size:1.2rem;">{{ day.icon }}</div>
+                <div>{{ day.day|slice:":3" }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Day Panels -->
+        {% for day in workout_plan.weekly_plan %}
+        <div class="day-panel {% if forloop.first %}active{% endif %}" id="dayPanel{{ forloop.counter0 }}">
+
+            <!-- Day Header -->
+            <div class="card mb-3" style="border: none; background: linear-gradient(135deg, #f8fdf9, #f0faf4);">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div class="flex-grow-1">
+                            <h4 style="font-family:'Playfair Display',serif;margin-bottom:4px;">
+                                {{ day.icon }} {{ day.day }} — {{ day.focus }}
+                            </h4>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="intensity-badge
+                                    {% if day.intensity == 'Low' %}intensity-Low
+                                    {% elif day.intensity == 'Moderate' %}intensity-Moderate
+                                    {% elif day.intensity == 'High' %}intensity-High
+                                    {% elif day.intensity == 'Rest' %}intensity-Rest
+                                    {% else %}intensity-Moderate{% endif %}">
+                                    {{ day.intensity }}
+                                </span>
+                                {% if day.duration != '—' %}
+                                <span style="font-size:0.8rem;color:var(--text-muted);">
+                                    <i class="bi bi-clock me-1"></i>{{ day.duration }}
+                                </span>
+                                {% endif %}
+                                <span id="completeBadge_{{ forloop.parentloop.counter0 }}" class="day-complete-badge">
+                                    ✅ Day Complete!
+                                </span>
+                            </div>
+                            {% if day.intensity != 'Rest' %}
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <div class="day-progress-bar-wrap flex-grow-1">
+                                    <div class="day-progress-bar-fill" id="dayBar_{{ forloop.parentloop.counter0 }}" style="width:0%"></div>
+                                </div>
+                                <span id="dayCount_{{ forloop.parentloop.counter0 }}" style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;">0 / {{ day.exercises|length }} done</span>
+                                <button class="reset-btn" onclick="resetDay({{ forloop.parentloop.counter0 }}, event)">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if day.intensity == 'Rest' %}
+                        <div style="font-size:2rem;">😴</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exercises -->
+            {% if day.intensity == 'Rest' %}
+            <div class="text-center py-4">
+                <div style="font-size:4rem;">🌿</div>
+                <h5 style="font-family:'Playfair Display',serif;margin-top:12px;">Rest & Recovery Day</h5>
+                <p class="text-muted" style="max-width:400px;margin:0 auto;">
+                    Rest days are just as important as workout days. Your muscles repair and grow during rest. 
+                    Sleep well, hydrate, and eat your protein!
+                </p>
+                {% for ex in day.exercises %}
+                <div class="exercise-row mt-3 text-start" style="max-width:500px;margin-left:auto;margin-right:auto;">
+                    <div class="d-flex align-items-start gap-3">
+                        <div style="font-size:1.3rem;">🌿</div>
+                        <div>
+                            <div class="ex-name">{{ ex.name }}</div>
+                            {% if ex.tip %}<div class="ex-tip"><i class="bi bi-lightbulb me-1" style="color:#f4a261;"></i>{{ ex.tip }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            <div>
+                {% for ex in day.exercises %}
+                <div class="exercise-row" id="ex_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}"
+                     onclick="toggleExercise({{ forloop.parentloop.counter0 }}, {{ forloop.counter0 }}, {{ day.exercises|length }})">
+                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                        <div class="d-flex align-items-start gap-3 flex-grow-1">
+                            <!-- Checkbox circle -->
+                            <div class="check-circle" id="chk_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}">
+                                <i class="bi bi-check2" style="display:none;"></i>
+                            </div>
+                            <div>
+                                <div class="ex-name">{{ ex.name }}</div>
+                                {% if ex.tip %}
+                                <div class="ex-tip">
+                                    <i class="bi bi-lightbulb me-1" style="color:#f4a261;"></i>{{ ex.tip }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if ex.sets != '—' %}
+                            <span class="ex-badge" style="background:#f0faf4;color:#2d6a4f;">
+                                <i class="bi bi-arrow-repeat me-1"></i>{{ ex.sets }} sets
+                            </span>
+                            {% endif %}
+                            {% if ex.reps != '—' %}
+                            <span class="ex-badge" style="background:#fff5eb;color:#f4a261;">
+                                {{ ex.reps }}
+                            </span>
+                            {% endif %}
+                            {% if ex.rest != '—' %}
+                            <span class="ex-badge" style="background:#f0f4ff;color:#4361ee;">
+                                <i class="bi bi-clock me-1"></i>{{ ex.rest }} rest
+                            </span>
+                            {% endif %}
+                            {% if ex.cal > 0 %}
+                            <span class="ex-badge" style="background:#fff0f0;color:#e63946;">
+                                🔥 ~{{ ex.cal }} cal
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4 d-flex flex-column gap-4 fade-in fade-in-1">
+
+        <!-- Weekly Overview -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-calendar-week me-2" style="color:#2d6a4f;"></i>Weekly Overview</div>
+            <div class="card-body p-3">
+                {% for day in workout_plan.weekly_plan %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+                    <div class="d-flex align-items-center gap-2">
+                        <span>{{ day.icon }}</span>
+                        <span style="font-size:0.85rem;font-weight:500;">{{ day.day }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size:0.75rem;color:var(--text-muted);" id="overviewText_{{ forloop.counter0 }}">{{ day.focus|truncatechars:15 }}</span>
+                        {% if day.intensity != 'Rest' %}
+                        <span class="ex-badge" id="overviewBadge_{{ forloop.counter0 }}" style="background:#f0faf4;color:#2d6a4f;">
+                            0/{{ day.exercises|length }}
+                        </span>
+                        {% else %}
+                        <span class="ex-badge" style="background:#e3f2fd;color:#1565c0;">Rest</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Overall Weekly Progress -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-trophy me-2" style="color:#f4a261;"></i>This Week's Progress</div>
+            <div class="card-body p-4 text-center">
+                <div style="position:relative;width:100px;height:100px;margin:0 auto 12px;">
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#e8f5e9" stroke-width="10"/>
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#2d6a4f" stroke-width="10"
+                                stroke-dasharray="264" stroke-dashoffset="264"
+                                stroke-linecap="round" transform="rotate(-90 50 50)"
+                                id="progressCircle" style="transition:stroke-dashoffset .5s ease;"/>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <div id="totalPct" style="font-size:1.3rem;font-weight:700;font-family:'Playfair Display',serif;color:#2d6a4f;">0%</div>
+                        <div style="font-size:0.65rem;color:var(--text-muted);">DONE</div>
+                    </div>
+                </div>
+                <div id="totalCountText" style="font-size:0.82rem;color:var(--text-muted);">0 exercises completed this week</div>
+                <button onclick="resetAll()" class="reset-btn mt-3">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>Reset All
+                </button>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightbulb me-2" style="color:#f4a261;"></i>Pro Tips for {{ workout_plan.label }}</div>
+            <div class="card-body p-3">
+                {% for tip in workout_plan.tips %}
+                <div class="tip-item">{{ tip }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Nutrition Reminder -->
+        <div class="card" style="background:linear-gradient(135deg,#1b4332,#2d6a4f);border:none;color:#fff;">
+            <div class="card-body p-4">
+                <h6 style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:12px;">
+                    🍽️ Workout Nutrition
+                </h6>
+                <div class="d-flex align-items-start gap-2 mb-2" style="font-size:0.82rem;color:rgba(255,255,255,0.85);">
+                    <span>⏰</span><span><strong>Before:</strong> Banana / toast 1hr before</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2" style="font-size:0.82rem;color:rgba(255,255,255,0.85);">
+                    <span>💪</span><span><strong>After:</strong> Protein within 30 min (curd/eggs/dal)</span>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-2" style="font-size:0.82rem;color:rgba(255,255,255,0.85);">
+                    <span>💧</span><span><strong>During:</strong> Sip water every 15–20 min</span>
+                </div>
+                <div class="d-flex align-items-start gap-2" style="font-size:0.82rem;color:rgba(255,255,255,0.85);">
+                    <span>🚫</span><span><strong>Avoid:</strong> Heavy meals 2hrs before exercise</span>
+                </div>
+                <a href="{% url 'generate_plan' %}" class="btn btn-sm mt-3 w-100" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;">
+                    <i class="bi bi-stars me-1"></i>View My Diet Plan
+                </a>
+            </div>
+        </div>
+
+        <!-- Safety Warning -->
+        <div class="card" style="border-color:#ffe082;background:#fffde7;">
+            <div class="card-body p-3">
+                <div style="font-size:0.8rem;color:#795548;">
+                    <strong>⚠️ Safety First:</strong> Warm up before every session. Stop if you feel chest pain, dizziness, or severe shortness of breath.
+                    {% if profile.health_conditions %}Especially important given your condition: <em>{{ profile.health_conditions }}</em>.{% endif %}
+                    Consult your doctor before starting a new exercise program.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Data: exercises per day (non-rest days) ──────────────────────────────
+const dayExCounts = {{ ex_counts }};
+const isRestDay = {{ is_rest_days }};
+
+// Storage key (per user + goal)
+const STORAGE_KEY = 'nutriai_workout_{{ request.user.id }}_{{ profile.goal }}';
+
+// Load saved state
+let state = {};
+try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = JSON.parse(saved);
+} catch(e) {}
+
+function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ── Toggle a single exercise ─────────────────────────────────────────────
+function toggleExercise(dayIdx, exIdx, total) {
+    const key = `${dayIdx}_${exIdx}`;
+    state[key] = !state[key];
+    saveState();
+    applyExerciseUI(dayIdx, exIdx);
+    updateDayProgress(dayIdx, total);
+    updateOverallProgress();
+}
+
+function applyExerciseUI(dayIdx, exIdx) {
+    const key = `${dayIdx}_${exIdx}`;
+    const row = document.getElementById(`ex_${dayIdx}_${exIdx}`);
+    const chk = document.getElementById(`chk_${dayIdx}_${exIdx}`);
+    if (!row || !chk) return;
+    const icon = chk.querySelector('i');
+    if (state[key]) {
+        row.classList.add('done');
+        chk.style.background = '#52b788';
+        chk.style.borderColor = '#52b788';
+        chk.style.color = '#fff';
+        if (icon) icon.style.display = '';
+    } else {
+        row.classList.remove('done');
+        chk.style.background = '#fff';
+        chk.style.borderColor = 'var(--border)';
+        chk.style.color = '';
+        if (icon) icon.style.display = 'none';
+    }
+}
+
+// ── Update day progress bar ──────────────────────────────────────────────
+function updateDayProgress(dayIdx, total) {
+    if (isRestDay[dayIdx]) return;
+    let done = 0;
+    for (let i = 0; i < total; i++) {
+        if (state[`${dayIdx}_${i}`]) done++;
+    }
+    const pct = total > 0 ? Math.round(done / total * 100) : 0;
+
+    const bar = document.getElementById(`dayBar_${dayIdx}`);
+    const count = document.getElementById(`dayCount_${dayIdx}`);
+    const badge = document.getElementById(`completeBadge_${dayIdx}`);
+    const overviewBadge = document.getElementById(`overviewBadge_${dayIdx}`);
+
+    if (bar) bar.style.width = pct + '%';
+    if (count) count.textContent = `${done} / ${total} done`;
+    if (badge) badge.style.display = (done === total && total > 0) ? 'inline-flex' : 'none';
+
+    // Update overview sidebar badge
+    if (overviewBadge) {
+        if (done === total && total > 0) {
+            overviewBadge.style.background = '#f0faf4';
+            overviewBadge.style.color = '#2d6a4f';
+            overviewBadge.textContent = '✅ Done';
+        } else {
+            overviewBadge.style.background = '#f0faf4';
+            overviewBadge.style.color = '#2d6a4f';
+            overviewBadge.textContent = `${done}/${total}`;
+        }
+    }
+
+    // Update day tab indicator
+    const tabs = document.querySelectorAll('.day-tab');
+    if (tabs[dayIdx]) {
+        const tabLabel = tabs[dayIdx].querySelector('div:last-child');
+        if (tabLabel) {
+            if (done === total && total > 0) {
+                tabs[dayIdx].style.borderColor = '#52b788';
+                tabs[dayIdx].querySelector('div:first-child').textContent = '✅';
+            } else if (done > 0) {
+                tabs[dayIdx].style.borderColor = '#f4a261';
+            }
+        }
+    }
+}
+
+// ── Update overall weekly progress ──────────────────────────────────────
+function updateOverallProgress() {
+    let totalEx = 0, totalDone = 0;
+    for (let d = 0; d < dayExCounts.length; d++) {
+        if (isRestDay[d]) continue;
+        totalEx += dayExCounts[d];
+        for (let e = 0; e < dayExCounts[d]; e++) {
+            if (state[`${d}_${e}`]) totalDone++;
+        }
+    }
+    const pct = totalEx > 0 ? Math.round(totalDone / totalEx * 100) : 0;
+    const circumference = 264;
+    const offset = circumference - (pct / 100 * circumference);
+
+    const circle = document.getElementById('progressCircle');
+    const pctText = document.getElementById('totalPct');
+    const countText = document.getElementById('totalCountText');
+
+    if (circle) circle.style.strokeDashoffset = offset;
+    if (pctText) pctText.textContent = pct + '%';
+    if (countText) countText.textContent = `${totalDone} of ${totalEx} exercises done`;
+}
+
+// ── Reset a single day ───────────────────────────────────────────────────
+function resetDay(dayIdx, event) {
+    event.stopPropagation();
+    for (let e = 0; e < dayExCounts[dayIdx]; e++) {
+        state[`${dayIdx}_${e}`] = false;
+        applyExerciseUI(dayIdx, e);
+    }
+    saveState();
+    updateDayProgress(dayIdx, dayExCounts[dayIdx]);
+    updateOverallProgress();
+    // Reset tab style
+    const tabs = document.querySelectorAll('.day-tab');
+    if (tabs[dayIdx]) {
+        tabs[dayIdx].style.borderColor = '';
+        const firstDiv = tabs[dayIdx].querySelector('div:first-child');
+        // Restore original emoji
+        const icons = ['🏃','🧘','⚡','😴','🦵','💪','🌿','🏋️','🦾','🎯','🏆','🌅','🚶','🧠','🌳','🪑','💧'];
+        // Just reset border; keep icon as-is from template
+    }
+}
+
+// ── Reset all ────────────────────────────────────────────────────────────
+function resetAll() {
+    if (!confirm('Reset all exercise progress for this week?')) return;
+    state = {};
+    saveState();
+    initUI();
+}
+
+// ── Day tab switching ────────────────────────────────────────────────────
+function switchDay(index, el) {
+    document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('dayPanel' + index).classList.add('active');
+    el.classList.add('active');
+    if (window.innerWidth < 768) {
+        document.getElementById('dayPanel' + index).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// ── Init: apply saved state on page load ────────────────────────────────
+function initUI() {
+    for (let d = 0; d < dayExCounts.length; d++) {
+        if (isRestDay[d]) continue;
+        for (let e = 0; e < dayExCounts[d]; e++) {
+            applyExerciseUI(d, e);
+        }
+        updateDayProgress(d, dayExCounts[d]);
+    }
+    updateOverallProgress();
+}
+
+document.addEventListener('DOMContentLoaded', initUI);
+</script>
+{% endblock %}

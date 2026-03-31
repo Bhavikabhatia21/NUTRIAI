@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Setup Profile - NutriAI{% endblock %}
+{% block page_title %}Setup Profile{% endblock %}
+
+{% block extra_css %}
+.step-header {
+    background: linear-gradient(135deg, #1b4332, #2d6a4f);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    color: #fff;
+    margin-bottom: 28px;
+}
+.section-card {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 20px;
+    background: #fff;
+    box-shadow: var(--shadow);
+}
+.section-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="step-header fade-in">
+    <div class="d-flex align-items-center gap-3">
+        <div style="font-size:2rem;">👤</div>
+        <div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:4px;">
+                {% if profile.age %}Update Your Profile{% else %}Step 2 — Complete Your Profile{% endif %}
+            </h2>
+            <p style="color:rgba(255,255,255,0.75);margin:0;font-size:0.88rem;">
+                The more we know, the better your AI diet plan will be.
+            </p>
+        </div>
+    </div>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <div class="row g-4">
+        <div class="col-md-6 fade-in fade-in-1">
+            <!-- Personal Info -->
+            <div class="section-card">
+                <div class="section-title"><i class="bi bi-person" style="color:#2d6a4f;"></i> Personal Information</div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label">Age</label>
+                        {{ form.age }}
+                        {% if form.age.errors %}<div class="text-danger small mt-1">{{ form.age.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Gender</label>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}<div class="text-danger small mt-1">{{ form.gender.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Height (cm)</label>
+                        {{ form.height_cm }}
+                        {% if form.height_cm.errors %}<div class="text-danger small mt-1">{{ form.height_cm.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Weight (kg)</label>
+                        {{ form.weight_kg }}
+                        {% if form.weight_kg.errors %}<div class="text-danger small mt-1">{{ form.weight_kg.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity & Goals -->
+            <div class="section-card">
+                <div class="section-title"><i class="bi bi-lightning" style="color:#f4a261;"></i> Activity & Goals</div>
+                <div class="mb-3">
+                    <label class="form-label">Activity Level</label>
+                    {{ form.activity_level }}
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Primary Goal</label>
+                    {{ form.goal }}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 fade-in fade-in-2">
+            <!-- Diet Preferences -->
+            <div class="section-card">
+                <div class="section-title"><i class="bi bi-egg-fried" style="color:#52b788;"></i> Diet Preferences</div>
+                <div class="mb-3">
+                    <label class="form-label">Diet Type</label>
+                    {{ form.diet_type }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Food Allergies / Intolerances</label>
+                    {{ form.allergies }}
+                    <small class="text-muted">Separate with commas (e.g. nuts, dairy)</small>
+                </div>
+                <div class="mb-0">
+                    <label class="form-label">Health Conditions</label>
+                    {{ form.health_conditions }}
+                    <small class="text-muted">e.g. diabetes, hypertension, PCOS</small>
+                </div>
+            </div>
+
+            {% if profile.bmi %}
+            <!-- BMI Display -->
+            <div class="section-card text-center">
+                <div class="section-title justify-content-center"><i class="bi bi-activity" style="color:#2d6a4f;"></i> Your Current BMI</div>
+                <div style="font-size:3rem;font-family:'Playfair Display',serif;font-weight:700;color:
+                    {% if profile.bmi_category == 'Normal' %}#2d6a4f{% elif profile.bmi_category == 'Underweight' %}#f4a261{% else %}#e63946{% endif %};">
+                    {{ profile.bmi }}
+                </div>
+                <span class="badge" style="background:#f0faf4;color:#2d6a4f;font-size:0.85rem;padding:6px 14px;">{{ profile.bmi_category }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-12 fade-in fade-in-3">
+            <div class="d-flex gap-3 justify-content-end">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                <button type="submit" class="btn btn-primary px-5">
+                    <i class="bi bi-check2 me-2"></i>Save & Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
