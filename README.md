@@ -1,6 +1,6 @@
 # 🥗 NutriAI — AI-Powered Diet Planner
 
-A full-stack Django web application with AI-generated personalized diet plans using the Anthropic Claude API.
+A full-stack Django web application with AI-generated personalized diet plans 
 
 ---
 
