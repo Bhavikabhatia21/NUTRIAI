@@ -137,8 +137,3 @@ After running `setup_and_run.sh`:
 - Chart.js line charts for weight trends
 - Print-friendly diet plan view
 
----
-
-## 📝 License
-
-MIT License — Free for personal and commercial use.
