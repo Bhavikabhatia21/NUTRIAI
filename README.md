@@ -1,6 +1,6 @@
 # 🥗 NutriAI — AI-Powered Diet Planner
 
-A full-stack Django web application with AI-generated personalized diet plans 
+A full-stack Django web application with rule-based personalized diet plans and nutrition tracking.
 
 ---
 
@@ -9,8 +9,8 @@ A full-stack Django web application with AI-generated personalized diet plans
 - **User Authentication** — Register, login, logout with full validation
 - **Profile Setup** — Age, height, weight, activity level, goals, diet type, allergies, health conditions
 - **BMI Calculator** — Auto-calculated with category (Underweight / Normal / Overweight / Obese)
-- **AI Diet Plan Generator** — 7-day personalized meal plan via Claude API
-- **AI Nutrition Coach (Chat)** — Real-time chatbot for diet & nutrition questions
+- **Diet Plan Generator** — 7-day personalized meal plan generated using rule-based logic
+- **Nutrition Coach (Chat)** — Interactive chatbot for diet & nutrition questions
 - **Meal Logger** — Log breakfast, lunch, dinner, snacks with full macros
 - **Calorie & Macro Tracker** — Daily totals with visual progress bars
 - **Weight Tracker** — Log & visualize weight trend with Chart.js
@@ -31,7 +31,6 @@ A full-stack Django web application with AI-generated personalized diet plans
 | Charts | Chart.js 4.4 |
 | Icons | Bootstrap Icons |
 | Fonts | Google Fonts (Playfair Display + DM Sans) |
-| AI | Anthropic Claude API (claude-sonnet-4) |
 
 ---
 
@@ -54,21 +53,7 @@ venv\Scripts\activate           # Windows
 pip install -r requirements.txt
 ```
 
-### 4. Set Your Anthropic API Key
-Open `ai_diet_plan/settings.py` and update:
-```python
-ANTHROPIC_API_KEY = 'sk-ant-your-key-here'
-```
-
-Or set as environment variable:
-```bash
-export ANTHROPIC_API_KEY='sk-ant-your-key-here'   # Linux/Mac
-set ANTHROPIC_API_KEY=sk-ant-your-key-here         # Windows
-```
-
-Get your API key at: https://console.anthropic.com
-
-### 5. Setup Database & Run
+### 4. Setup Database & Run
 ```bash
 python manage.py makemigrations diet
 python manage.py migrate
@@ -81,7 +66,7 @@ Or simply run:
 bash setup_and_run.sh
 ```
 
-### 6. Open in Browser
+### 5. Open in Browser
 - **App:** http://127.0.0.1:8000
 - **Admin:** http://127.0.0.1:8000/admin
 
@@ -92,12 +77,12 @@ bash setup_and_run.sh
 ```
 ai_diet_plan/
 ├── ai_diet_plan/
-│   ├── settings.py          # Django settings + API key
+│   ├── settings.py          # Django settings
 │   ├── urls.py              # Main URL config
 │   └── wsgi.py
 ├── diet/
 │   ├── models.py            # UserProfile, DietPlan, MealLog, WeightLog
-│   ├── views.py             # All views including AI generation
+│   ├── views.py             # All views including plan generation
 │   ├── forms.py             # Auth + profile + logging forms
 │   ├── urls.py              # App URL patterns
 │   └── admin.py             # Django admin
@@ -117,7 +102,7 @@ ai_diet_plan/
 │       ├── meal_history.html
 │       ├── log_weight.html
 │       ├── weight_history.html
-│       └── ai_chat.html     # Real-time AI chat
+│       └── ai_chat.html     # Nutrition chat
 ├── manage.py
 ├── requirements.txt
 └── setup_and_run.sh
@@ -125,13 +110,14 @@ ai_diet_plan/
 
 ---
 
-## 🔑 API Key Configuration
+## ⚙️ How Diet Plan Generation Works
 
-The app uses the Anthropic Claude API for:
-1. **Plan Generation** — Creates a full 7-day diet plan based on your profile
-2. **AI Chat** — Answers nutrition questions with profile context
+The diet plan generator uses **rule-based logic** — no external API required:
 
-Without an API key, the UI still works fully — you just won't be able to generate AI plans or use chat.
+- User profile data (age, weight, height, activity level, goal, diet type) is used to calculate daily calorie needs
+- Meals are selected from a curated database of food items based on the user's diet type (Vegetarian, Vegan, Non-Vegetarian, etc.)
+- Allergies and health conditions are factored in to filter out unsuitable foods
+- A complete 7-day plan with breakfast, lunch, dinner, and snacks is generated instantly
 
 ---
 
@@ -149,7 +135,6 @@ After running `setup_and_run.sh`:
 - Playfair Display serif headings for elegance
 - Smooth fade-in animations throughout
 - Chart.js line charts for weight trends
-- Real-time typing animation in AI chat
 - Print-friendly diet plan view
 
 ---
